@@ -1,0 +1,55 @@
+
+body {
+  font-family: 'Oswald', sans-serif !important;
+  background-color: rgb(70, 63, 63) !important;
+}
+
+body h1{
+  color:rgb(255, 255, 255);
+}
+
+body h3{
+  color: black;
+}
+
+body span{
+  color: black;
+}
+
+#card-top{
+  background-color: rgba(87, 252, 252, 0.605);
+}
+
+#card-top h1{
+  color: white;
+}
+
+
+
+.nav-tabs .nav-link{
+  background-color: transparent !important;
+  color:whitesmoke !important;
+  border-top: none !important;
+  border-left: none !important;
+  border-right: none !important;
+}
+
+.nav-tabs .nav-link.active {
+  border-bottom: solid 4px white !important;
+}
+
+#card-1{
+  background-color: rgb(141, 137, 137);
+  border-color: black;
+  border: solid;
+  border-width: 0.5px;
+}
+
+.card-body{
+  width: auto;
+  font-weight:700;
+}
+
+#card-grid{
+  background-color: whitesmoke;
+}
