@@ -17,7 +17,8 @@ body span{
 }
 
 #card-top{
-  background-color: rgba(87, 252, 252, 0.605);
+  background: linear-gradient(#345e88, #63cede);
+  color: white;
 }
 
 #card-top h1{
@@ -42,7 +43,7 @@ body span{
   background-color: rgb(141, 137, 137);
   border-color: black;
   border: solid;
-  border-width: 0.5px;
+  border-width: 0px;
 }
 
 .card-body{
@@ -51,5 +52,7 @@ body span{
 }
 
 #card-grid{
-  background-color: whitesmoke;
+  background-color: rgb(105, 104, 104);
+  color: black;
+  font-weight: 1;
 }

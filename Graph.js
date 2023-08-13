@@ -12,16 +12,14 @@ const current_date = moment().format('MM/DD/YY');
 
 function hour_grouping(dictionary){
   let ret_dictionary = {
-    '0': [], '1': [], '2': [], '3': [], '4': [], '5': [], '6': [], '7': [], '8': [], '9': [], '10': [], '11': [], '12': [], '13': [], '14': [], '15': [], '16': [], '17': [], '18': [], '19': [], '20': [], '21': [], '22': [], '23': [], '24': []
+    '0': [], '1': [], '2': [], 3: [], '4': [], '5': [], '6': [], '7': [], '8': [], '9': [], '10': [], '11': [], '12': [], '13': [], '14': [], '15': [], '16': [], '17': [], '18': [], '19': [], '20': [], '21': [], '22': [], '23': [], '24': []
   };
   try {
     dictionary.forEach(element => {
-      let key = element['time_taken'].split(":")[0];
-      const check_zero = key.split("0");
-      if(check_zero[0] === ''){
-        key = check_zero[1];
-      }
-      ret_dictionary[key].push({
+      if(Object.keys(element).length === 0){ return;}
+      const key = element['time_taken'].split(":")[0];
+      const parseZero = parseInt(key);
+      ret_dictionary[parseZero].push({
         'ambient_temperature': element['ambient_temperature'],
         'ground_temp': element['ground_temp'],
         'wind_speed': element['wind_speed'],
@@ -37,7 +35,7 @@ function hour_grouping(dictionary){
 
 function week_grouping(dictionary){
   let ret_dictionary = {};
-  for(let i = 0; i<8; i++){
+  for(let i = 7; i>=0; i--){
     const date = moment().subtract(i, 'day').format('MM/DD/YY');
     try {
       ret_dictionary[date] = dictionary[date];
@@ -46,86 +44,97 @@ function week_grouping(dictionary){
   return ret_dictionary;
 }
 
-function month_grouping(dictionary){
-  let days_in_month = moment().daysInMonth();
-  let ret_dictionary = {};
-  while(days_in_month){
-    try {
-      var cur = moment().date(days_in_month).format("MM/DD/YY");
-      ret_dictionary[cur] = dictionary[cur];
-      days_in_month--; 
-    } catch (error) {}
-  }
-  return ret_dictionary;
+function convert_to_fahrenheit(celcius_data){
+  if(Number(celcius_data) === 0){ return 0;}
+  return ((celcius_data * (9/5)) + 32).toFixed();
 }
 
-function year_grouping(dictionary){
-  let ret_dictionary = {
-    "Jan": [], "Feb": [], "Mar": [], "Apr": [], "May": [], "Jun": [], "Jul": [], "Aug": [], "Sep": [], "Oct": [], "Nov": [], "Dec": []
-  }
-  Object.keys(dictionary).forEach(element => {
-    let tokens = element.split("/");
-    let month = tokens[0];
-    switch(month){
-      case "01":
-        ret_dictionary['Jan'] = dictionary[element];
-        break;
-      case "02":
-        ret_dictionary['Feb'] = dictionary[element];
-        break;
-      case "03":
-        ret_dictionary['Mar'] = dictionary[element];
-        break;
-      case "04":
-        ret_dictionary['Apr'] = dictionary[element];
-        break;
-      case "05":
-        ret_dictionary['May'] = dictionary[element];
-        break;
-      case "06":
-        ret_dictionary['Jun'] = dictionary[element];
-        break;
-      case "07":
-        ret_dictionary['Jul'] = dictionary[element];
-        break;
-      case "08":
-        ret_dictionary['Aug'] = dictionary[element];
-        break;
-      case "09":
-        ret_dictionary['Sep'] = dictionary[element];
-        break;
-      case "10":
-        ret_dictionary['Oct'] = dictionary[element];
-        break;
-      case "11":
-        ret_dictionary['Nov'] = dictionary[element];
-        break;
-      case "12":
-        ret_dictionary['Dec'] = dictionary[element];
-        break;
-    }
-  });
-  return ret_dictionary;
-}
+//function month_grouping(dictionary){
+//  let days_in_month = moment().daysInMonth();
+//  let ret_dictionary = {};
+//  try {
+//    for(let i=1; i<=days_in_month; i++){
+//      let date = moment().date(i).format("MM/DD/YY");
+//      ret_dictionary[date] = dictionary[date];
+//      console.log(date);
+//    } 
+//  } catch (error) {}
+//  return ret_dictionary;
+//}
+
+//function year_grouping(dictionary){
+//  let ret_dictionary = {
+//    "Jan": [], "Feb": [], "Mar": [], "Apr": [], "May": [], "Jun": [], "Jul": [], "Aug": [], "Sep": [], "Oct": [], "Nov": [], "Dec": []
+//  }
+//  Object.keys(dictionary).forEach(element => {
+//    let tokens = element.split("/");
+//    let month = tokens[0];
+//    switch(month){
+//      case "01":
+//        ret_dictionary['Jan'] = dictionary[element];
+//        break;
+//      case "02":
+//        ret_dictionary['Feb'] = dictionary[element];
+//        break;
+//      case "03":
+//        ret_dictionary['Mar'] = dictionary[element];
+//        break;
+//      case "04":
+//        ret_dictionary['Apr'] = dictionary[element];
+//        break;
+//      case "05":
+//        ret_dictionary['May'] = dictionary[element];
+//        break;
+//      case "06":
+//        ret_dictionary['Jun'] = dictionary[element];
+//        break;
+//      case "07":
+//        ret_dictionary['Jul'] = dictionary[element];
+//        break;
+//      case "08":
+//        ret_dictionary['Aug'] = dictionary[element];
+//        break;
+//      case "09":
+//        ret_dictionary['Sep'] = dictionary[element];
+//        break;
+//      case "10":
+//        ret_dictionary['Oct'] = dictionary[element];
+//        break;
+//      case "11":
+//        ret_dictionary['Nov'] = dictionary[element];
+//        break;
+//      case "12":
+//        ret_dictionary['Dec'] = dictionary[element];
+//        break;
+//    }
+//  });
+//  return ret_dictionary;
+//}
 
 //averages numbers in dictionary based off the key given
 const average = (array, key) => {
     try {
         const length = array.length;
         return array.reduce((acc, value) => {
-            return acc + (value[key] / length);
+            return (acc + (value[key] / length));
         }, 0);   
     } catch (error) {}
 };
 
-function graph_dictionary(dictionary, key_name){
+function graph_dictionary(dictionary, key_name, convert=false){
     let arr = [];
     try {
         const keys = Object.keys(dictionary);
         keys.forEach(key => {
+            let number;
+            if(convert){
+              number = convert_to_fahrenheit(average(dictionary[key], key_name).toFixed(2));
+            }else{
+              number = average(dictionary[key], key_name).toFixed(2);
+            }
             arr.push({
                 name: key,
-                [key_name]: average(dictionary[key], key_name)
+                [key_name]: number
             });
         })
         //reverse order of array, since most recent data will be at the beginning of list.
@@ -163,14 +172,6 @@ export default function Graph(){
           setKey('Date');
           setInterval(1);
           break;
-        case "Month":
-          setKey('Date');
-          setInterval(6);
-          break;
-        case "Year":
-          setKey("Month");
-          setInterval(1);
-          break;
         default:
           setKey('Hour');
           setInterval(1);
@@ -180,23 +181,19 @@ export default function Graph(){
     const selectDict = (val) => {
       switch(val){
         case "Day":
-          return hour_grouping(dictionary[current_date]);
+          return hour_grouping(dictionary['day']);
         case "Week":
-          return week_grouping(dictionary);
-        case "Month":
-          return month_grouping(dictionary);
-        case "Year":
-          return year_grouping(dictionary);
+          return week_grouping(dictionary['week']);
         default:
           return hour_grouping(dictionary[current_date]);
       }
     }
-    const ambient_temp_avg = graph_dictionary(selectDict(value), 'ambient_temperature');
+    const ambient_temp_avg = graph_dictionary(selectDict(value), 'ambient_temperature', true);
     const humidity_avg = graph_dictionary(selectDict(value), 'humidity');
     const wind_speed_avg = graph_dictionary(selectDict(value), 'wind_speed');
     const pressure_avg = graph_dictionary(selectDict(value), 'pressure');
     const wind_gust_avg = graph_dictionary(selectDict(value), 'wind_gust');
-    const ground_temp_avg = graph_dictionary(selectDict(value), 'ground_temp');
+    const ground_temp_avg = graph_dictionary(selectDict(value), 'ground_temp', true);
     return(
       <Container>
         <Row xs={1} md={2} lg={3} className="g-4 mt-4 text-center mb-4">
@@ -204,7 +201,7 @@ export default function Graph(){
             <Card id="card-grid">
               <Card.Body>
                 <Card.Title className="d-flex justify-content-between">
-                  <h5 className="mt-1">Average Air Temperature</h5>
+                  <h5 className="mt-1 text-light">Average Air Temperature (F&deg;)</h5>
                   <DropdownButton
                     title={value}
                     id="dropdown-menu"
@@ -213,8 +210,6 @@ export default function Graph(){
                     >
                     <Dropdown.Item eventKey="Day">Day</Dropdown.Item>
                     <Dropdown.Item eventKey="Week">Week</Dropdown.Item>
-                    <Dropdown.Item eventKey="Month">Month</Dropdown.Item>
-                    <Dropdown.Item eventKey="Year">Year</Dropdown.Item>
                   </DropdownButton>
                 </Card.Title>
                 <Card.Text>
@@ -229,11 +224,17 @@ export default function Graph(){
                           bottom: 0,
                         }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" interval={interval_val}/>
-                        <YAxis />
+                        <defs>
+                        <linearGradient id="colorAir" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#FF5F1F" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#39FF14" stopOpacity={0.2}/>
+                        </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="0.2 " />
+                        <XAxis dataKey="name" interval={interval_val} tick={{fill: 'black'}} tickLine={{stroke: 'black'}}/>
+                        <YAxis tick={{fill: 'black'}} tickLine={{stroke: 'black'}}/>
                         <Tooltip />
-                        <Area type="monotone" dataKey="ambient_temperature" stroke="#8884d8" fill="#8884d8" />
+                        <Area type="monotone" dataKey="ambient_temperature" fillOpacity={1} stroke="#8884d8" fill="url(#colorAir)" />
                       </AreaChart>
                     </ResponsiveContainer>
                     <p>{key}</p>
@@ -245,7 +246,7 @@ export default function Graph(){
             <Card id="card-grid">
               <Card.Body>
               <Card.Title className="d-flex justify-content-between">
-                  <h5 className="mt-1">Average Ground Temperature</h5>
+                  <h5 className="mt-1 text-light">Average Ground Temperature (F&deg;)</h5>
                   <DropdownButton
                     title={value}
                     id="dropdown-menu"
@@ -254,8 +255,6 @@ export default function Graph(){
                     >
                     <Dropdown.Item eventKey="Day">Day</Dropdown.Item>
                     <Dropdown.Item eventKey="Week">Week</Dropdown.Item>
-                    <Dropdown.Item eventKey="Month">Month</Dropdown.Item>
-                    <Dropdown.Item eventKey="Year">Year</Dropdown.Item>
                   </DropdownButton>
                 </Card.Title>
                 <Card.Text>
@@ -270,11 +269,17 @@ export default function Graph(){
                           bottom: 0,
                         }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" interval={interval_val}/>
-                        <YAxis />
+                        <defs>
+                        <linearGradient id="colorGround" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#FF5F1F" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#39FF14" stopOpacity={0.2}/>
+                        </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="0.2 " />
+                        <XAxis dataKey="name" interval={interval_val} tick={{fill: 'black'}} tickLine={{stroke: 'black'}}/>
+                        <YAxis tick={{fill: 'black'}} tickLine={{stroke: 'black'}}/>
                         <Tooltip />
-                        <Area type="monotone" dataKey="ground_temp" stroke="#8884d8" fill="#8884d8" />
+                        <Area type="monotone" dataKey="ground_temp" fillOpacity={1} stroke="#8884d8" fill="url(#colorGround)" />
                       </AreaChart>
                     </ResponsiveContainer>
                     <p>{key}</p>
@@ -286,7 +291,7 @@ export default function Graph(){
             <Card id="card-grid">
               <Card.Body>
               <Card.Title className="d-flex justify-content-between">
-                  <h5 className="mt-1">Average Humidity</h5>
+                  <h5 className="mt-1 text-light">Average Humidity (%)</h5>
                   <DropdownButton
                     title={value}
                     id="dropdown-menu"
@@ -295,8 +300,6 @@ export default function Graph(){
                     >
                     <Dropdown.Item eventKey="Day">Day</Dropdown.Item>
                     <Dropdown.Item eventKey="Week">Week</Dropdown.Item>
-                    <Dropdown.Item eventKey="Month">Month</Dropdown.Item>
-                    <Dropdown.Item eventKey="Year">Year</Dropdown.Item>
                   </DropdownButton>
                 </Card.Title>
                 <Card.Text>
@@ -311,11 +314,17 @@ export default function Graph(){
                           bottom: 0,
                         }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" interval={interval_val}/>
-                        <YAxis />
+                        <defs>
+                        <linearGradient id="colorHumid" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="5%" stopColor="#4BF0FC" stopOpacity={0.8}/>
+                          <stop offset="95%" stopColor="#39FF14" stopOpacity={0.2}/>
+                        </linearGradient>
+                        </defs>
+                        <CartesianGrid strokeDasharray="0.2 " />
+                        <XAxis dataKey="name" interval={interval_val} tick={{fill: 'black'}} tickLine={{stroke: 'black'}}/>
+                        <YAxis tick={{fill: 'black'}} tickLine={{stroke: 'black'}}/>
                         <Tooltip />
-                        <Area type="monotone" dataKey="humidity" stroke="#8884d8" fill="#8884d8" />
+                        <Area type="monotone" dataKey="humidity" fillOpacity={1} stroke="#8884d8" fill="url(#colorHumid)" />
                       </AreaChart>
                     </ResponsiveContainer>
                     <p>{key}</p>
@@ -327,7 +336,7 @@ export default function Graph(){
             <Card id="card-grid">
               <Card.Body>
               <Card.Title className="d-flex justify-content-between">
-                  <h5 className="mt-1">Average Wind Speed</h5>
+                  <h5 className="mt-1 text-light">Average Wind Speed (km/h)</h5>
                   <DropdownButton
                     title={value}
                     id="dropdown-menu"
@@ -336,8 +345,6 @@ export default function Graph(){
                     >
                     <Dropdown.Item eventKey="Day">Day</Dropdown.Item>
                     <Dropdown.Item eventKey="Week">Week</Dropdown.Item>
-                    <Dropdown.Item eventKey="Month">Month</Dropdown.Item>
-                    <Dropdown.Item eventKey="Year">Year</Dropdown.Item>
                   </DropdownButton>
                 </Card.Title>
                 <Card.Text>
@@ -352,11 +359,11 @@ export default function Graph(){
                           bottom: 0,
                         }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" interval={interval_val}/>
-                        <YAxis />
+                        <CartesianGrid strokeDasharray="0.2 " />
+                        <XAxis dataKey="name" interval={interval_val} tick={{fill: 'black'}} tickLine={{stroke: 'black'}}/>
+                        <YAxis tick={{fill: 'black'}} tickLine={{stroke: 'black'}}/>
                         <Tooltip />
-                        <Area type="monotone" dataKey="wind_speed" stroke="#8884d8" fill="#8884d8" />
+                        <Area type="monotone" dataKey="wind_speed" fillOpacity={0.4} stroke="#00FFFF" fill="#4BF0FC" />
                       </AreaChart>
                     </ResponsiveContainer>
                     <p>{key}</p>
@@ -368,7 +375,7 @@ export default function Graph(){
             <Card id="card-grid">
               <Card.Body>
               <Card.Title className="d-flex justify-content-between">
-                  <h5 className="mt-1">Average Wind Gust</h5>
+                  <h5 className="mt-1 text-light">Average Wind Gust (km/h)</h5>
                   <DropdownButton
                     title={value}
                     id="dropdown-menu"
@@ -377,8 +384,6 @@ export default function Graph(){
                     >
                     <Dropdown.Item eventKey="Day">Day</Dropdown.Item>
                     <Dropdown.Item eventKey="Week">Week</Dropdown.Item>
-                    <Dropdown.Item eventKey="Month">Month</Dropdown.Item>
-                    <Dropdown.Item eventKey="Year">Year</Dropdown.Item>
                   </DropdownButton>
                 </Card.Title>
                 <Card.Text>
@@ -393,11 +398,11 @@ export default function Graph(){
                           bottom: 0,
                         }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" interval={interval_val}/>
-                        <YAxis />
+                        <CartesianGrid strokeDasharray="0.2 " />
+                        <XAxis dataKey="name" interval={interval_val} tick={{fill: 'black'}} tickLine={{stroke: 'black'}}/>
+                        <YAxis tick={{fill: 'black'}} tickLine={{stroke: 'black'}}/>
                         <Tooltip />
-                        <Area type="monotone" dataKey="wind_gust" stroke="#8884d8" fill="#8884d8" />
+                        <Area type="monotone" dataKey="wind_gust" fillOpacity={0.4} stroke="#00FFFF" fill="#4BF0FC" />
                       </AreaChart>
                     </ResponsiveContainer>
                     <p>{key}</p>
@@ -409,7 +414,7 @@ export default function Graph(){
             <Card id="card-grid">
               <Card.Body>
               <Card.Title className="d-flex justify-content-between">
-                  <h5 className="mt-1">Average Pressure</h5>
+                  <h5 className="mt-1 text-light">Average Pressure (hPa)</h5>
                   <DropdownButton
                     title={value}
                     id="dropdown-menu"
@@ -418,8 +423,6 @@ export default function Graph(){
                     >
                     <Dropdown.Item eventKey="Day">Day</Dropdown.Item>
                     <Dropdown.Item eventKey="Week">Week</Dropdown.Item>
-                    <Dropdown.Item eventKey="Month">Month</Dropdown.Item>
-                    <Dropdown.Item eventKey="Year">Year</Dropdown.Item>
                   </DropdownButton>
                 </Card.Title>
                 <Card.Text>
@@ -434,11 +437,11 @@ export default function Graph(){
                           bottom: 0,
                         }}
                       >
-                        <CartesianGrid strokeDasharray="3 3" />
-                        <XAxis dataKey="name" interval={interval_val}/>
-                        <YAxis />
+                        <CartesianGrid strokeDasharray="0.2 " />
+                        <XAxis dataKey="name" interval={interval_val} tick={{fill: 'black'}} tickLine={{stroke: 'black'}}/>
+                        <YAxis tick={{fill: 'black'}} tickLine={{stroke: 'black'}}/>
                         <Tooltip />
-                        <Area type="monotone" dataKey="pressure" stroke="#8884d8" fill="#8884d8" />
+                        <Area type="monotone" dataKey="pressure" fillOpacity={0.6} stroke="#8884d8" fill="#8884d8" />
                       </AreaChart>
                     </ResponsiveContainer>
                     <p>{key}</p>

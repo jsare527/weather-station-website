@@ -5,8 +5,6 @@ import windLogo from './pics/oKS.svg';
 import tempLogo from './pics/oH_.svg';
 import humLogo from './pics/oHw.svg';
 import './index.css';
-//import History from './History.js';
-//import Graph from './Graph.js';
 import Tab from 'react-bootstrap/Tab';
 import Tabs from 'react-bootstrap/Tabs';
 import Card from 'react-bootstrap/Card';
@@ -15,8 +13,7 @@ import Col from 'react-bootstrap/Col';
 import Container from 'react-bootstrap/Container';
 import BootstrapSwitchButton from 'bootstrap-switch-button-react'
 import { ThemeProvider, createTheme } from '@mui/material/styles';
-const Graph = lazy(() => import('./Graph'));
-const History = lazy(() => import('./History'));
+import Graph from './Graph.js';
 const darkTheme = createTheme({
   palette: {
     mode: 'dark',
@@ -90,13 +87,13 @@ function App() {
                 <Container id="card-top">
                   <Row className="justify-content-around align-items-center">
                     <Col sm={4} className="text-center p-3"> 
-                      <h1 style={{fontSize: '50px'}}>{air_temperature}&deg;{symbol}</h1>
+                      <h1 style={{fontSize: '50px'}}>{((parseInt(air_temperature) + parseInt(ground_temperature)) / 2).toFixed()}&deg;{symbol}</h1>
                     </Col>
                     <Col sm={4} className="p-3">
                       <Card.Img variant="top" src={logo} height={100}></Card.Img>
                     </Col>
                     <Col sm={4} className="text-center p-3">
-                    <h1 style={{fontSize: '50px'}}>Sunny</h1>
+                    <h1 style={{fontSize: '35px'}}>Last updated: {data.time_taken} CDT</h1>
                     </Col>
                   </Row>
                 </Container>
@@ -155,11 +152,8 @@ function App() {
                 </Card.Body>
               </Card>
              </Container>
-             <Graph/>
-          </Tab>
-          <Tab eventKey="weather-history" title="Weather history">
-            <Suspense fallback={<h1>Still Loading...</h1>}>
-              <History/>
+             <Suspense fallback={<h1 className="text-center">Still Loading...</h1>}>
+              <Graph/>
             </Suspense>
           </Tab>
           <Tab eventKey="graphs" title="Graphs">
